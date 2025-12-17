@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232c2c2c'/%3E%3Ctext x='50' y='70' font-family='Arial' font-size='60' fill='%23e5e5e5' text-anchor='middle' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232c2c2c'/%3E%3Ctext x='50' y='70' font-family='Arial' font-size='60' fill='%23e5e5e5' text-anchor='middle' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E">
   <style>
     * {
       margin: 0;
@@ -128,7 +130,7 @@
       position: absolute;
       top: 100%;
       left: 12px;
-      margin-top: 4px;
+      margin-top: -4px;
       background: #1e1e1e;
       border: 1px solid #2c2c2c;
       border-radius: 4px;
@@ -181,6 +183,12 @@
     .workspace-dropdown-footer:hover {
       background: #2c2c2c;
       color: #c3ddff;
+    }
+
+    .train-status {
+      margin-top: 4px;
+      font-size: 10px;
+      color: #888888;
     }
 
     .advanced-options {
@@ -268,6 +276,7 @@
         opacity: 0;
         transform: translateY(4px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -561,9 +570,13 @@
     }
 
     @keyframes typing {
-      0%, 60%, 100% {
+
+      0%,
+      60%,
+      100% {
         opacity: 0.4;
       }
+
       30% {
         opacity: 1;
       }
@@ -653,8 +666,62 @@
     .image-modal-close:hover {
       background: #4a4a4a;
     }
+
+    .training-banner {
+      display: none;
+      background: #2c2c2c;
+      border-bottom: 1px solid #383838;
+      padding: 8px 12px;
+      height: 36px;
+      font-size: 10px;
+      color: #e5e5e5;
+      align-items: center;
+      justify-content: space-between;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      width: 100%;
+    }
+
+    .training-banner.visible {
+      display: flex;
+    }
+
+    .training-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .training-banner-close {
+      background: none;
+      border: none;
+      color: #888888;
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+    }
+
+    .training-banner-close:hover {
+      background: #383838;
+      color: #e5e5e5;
+    }
+
+    .training-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
   </style>
 </head>
+
 <body>
   <div class="chat-container">
     <div class="chat-header">
@@ -669,29 +736,17 @@
         </button>
         <div class="train-controls">
           <button class="train-button" id="trainFileButton" title="Train this file">Train this file</button>
-          <button
-            class="advanced-icon-button"
-            id="advancedIconButton"
-            title="Advanced options"
-            aria-label="Advanced training options"
-          >
+          <button class="advanced-icon-button" id="advancedIconButton" title="Advanced options"
+            aria-label="Advanced training options">
             ⛭
           </button>
         </div>
       </div>
       <div class="workspace-dropdown" id="workspaceDropdown">
-        <div
-          class="workspace-dropdown-option"
-          data-workspace-id="icd"
-          data-workspace-name="ICD"
-        >
+        <div class="workspace-dropdown-option" data-workspace-id="icd" data-workspace-name="ICD">
           <span>ICD</span>
         </div>
-        <div
-          class="workspace-dropdown-option"
-          data-workspace-id="unifyapps"
-          data-workspace-name="Unifyapps"
-        >
+        <div class="workspace-dropdown-option" data-workspace-id="unifyapps" data-workspace-name="Unifyapps">
           <span>Unifyapps</span>
         </div>
         <div class="workspace-dropdown-footer" id="workspaceDropdownFooter">
@@ -717,20 +772,30 @@
           <span>Include only frames on this page</span>
         </label>
       </div>
+      <div class="train-status" id="trainStatus" style="display: none;"></div>
+    </div>
+
+    <div class="training-banner" id="trainingBanner">
+      <div class="training-banner-content">
+        <span id="trainingBannerText">Training...</span>
+      </div>
+      <button class="training-banner-close" id="closeTrainingBanner" title="Close">✕</button>
+      <div class="training-progress-bar" id="trainingProgressBar"></div>
     </div>
 
     <div class="messages-container" id="messagesContainer">
       <div class="empty-state" id="emptyState">
         <div>Start a conversation to search for design links</div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="height: 2px; width: 40px; background-color: #252525; " ></div>
+          <div style="height: 2px; width: 40px; background-color: #252525; "></div>
           <p>or</p>
-          <div style="height: 2px; width: 40px; background-color: #252525; " ></div>
+          <div style="height: 2px; width: 40px; background-color: #252525; "></div>
         </div>
         <div class="conversation-starters">
           <button class="starter-button" data-starter="Show me dashboard designs">Show me dashboard designs</button>
           <button class="starter-button" data-starter="Find mobile app UI kits">Find mobile app UI kits</button>
-          <button class="starter-button" data-starter="Search for landing page templates">Search for landing page templates</button>
+          <button class="starter-button" data-starter="Search for landing page templates">Search for landing page
+            templates</button>
         </div>
       </div>
     </div>
@@ -741,18 +806,12 @@
     </div>
 
     <div class="input-container">
-      <input 
-        type="text" 
-        class="input-field" 
-        id="messageInput" 
-        placeholder="Search for designs..."
-        autocomplete="off"
-      />
+      <input type="text" class="input-field" id="messageInput" placeholder="Search for designs..." autocomplete="off" />
       <button class="send-button" id="sendButton">Send</button>
     </div>
   </div>
 
-<script>
+  <script>
     const messagesContainer = document.getElementById('messagesContainer');
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
@@ -767,6 +826,12 @@
     const onlyThisPageCheckbox = document.getElementById('onlyThisPage');
     const workspaceDropdown = document.getElementById('workspaceDropdown');
     const workspaceDropdownFooter = document.getElementById('workspaceDropdownFooter');
+    const trainStatus = document.getElementById('trainStatus');
+    const trainingBanner = document.getElementById('trainingBanner');
+    const trainingBannerText = document.getElementById('trainingBannerText');
+    const closeTrainingBanner = document.getElementById('closeTrainingBanner');
+    const trainingProgressBar = document.getElementById('trainingProgressBar');
+    let trainingTimerId = null;
 
     // Mock link previews data - 4 links
     const mockPreviews = [
@@ -808,38 +873,38 @@
 
     function addMessage(text, isUser) {
       hideEmptyState();
-      
+
       const messageDiv = document.createElement('div');
       messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-      
+
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
       bubble.textContent = text;
-      
+
       messageDiv.appendChild(bubble);
       messagesContainer.appendChild(messageDiv);
-      
+
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      
+
       return messageDiv;
     }
 
     function addTypingIndicator() {
       hideEmptyState();
-      
+
       const messageDiv = document.createElement('div');
       messageDiv.className = 'message bot';
       messageDiv.id = 'typingIndicator';
-      
+
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble typing-indicator';
-      
+
       for (let i = 0; i < 3; i++) {
         const dot = document.createElement('div');
         dot.className = 'typing-dot';
         bubble.appendChild(dot);
       }
-      
+
       messageDiv.appendChild(bubble);
       messagesContainer.appendChild(messageDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -855,11 +920,11 @@
     function createLinkPreview(preview) {
       const previewDiv = document.createElement('div');
       previewDiv.className = 'link-preview';
-      
+
       // Create image div first
       const imageDiv = document.createElement('div');
       imageDiv.className = 'preview-image';
-      
+
       if (preview.image) {
         const img = document.createElement('img');
         img.src = preview.image;
@@ -879,7 +944,7 @@
       } else {
         imageDiv.innerHTML = '<div class="preview-image-placeholder">No preview available</div>';
       }
-      
+
       // Create content div
       const contentDiv = document.createElement('div');
       contentDiv.className = 'preview-content';
@@ -888,7 +953,7 @@
         <a href="${preview.url}" class="preview-url" target="_blank">${preview.url}</a>
         <div class="preview-description">${preview.description}</div>
       `;
-      
+
       // Create actions div
       const actionsDiv = document.createElement('div');
       actionsDiv.className = 'preview-actions';
@@ -897,12 +962,12 @@
         <button class="action-button insert" data-action="insert" data-url="${preview.url}">Insert</button>
         <button class="action-button goto" data-action="goto" data-url="${preview.url}">Open file</button>
       `;
-      
+
       // Append all elements
       previewDiv.appendChild(imageDiv);
       previewDiv.appendChild(contentDiv);
       previewDiv.appendChild(actionsDiv);
-      
+
       // Add click handlers for action buttons
       const actionButtons = actionsDiv.querySelectorAll('.action-button');
       actionButtons.forEach(button => {
@@ -913,7 +978,7 @@
           handlePreviewAction(action, url, preview.title);
         });
       });
-      
+
       return previewDiv;
     }
 
@@ -949,33 +1014,33 @@
 
     function addLinkPreviews(previews) {
       removeTypingIndicator();
-      
+
       const messageWrapper = document.createElement('div');
       messageWrapper.className = 'bot-message-wrapper';
-      
+
       const messageDiv = document.createElement('div');
       messageDiv.className = 'message bot';
-      
+
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
       bubble.textContent = 'Found design links:';
-      
+
       messageDiv.appendChild(bubble);
       messageWrapper.appendChild(messageDiv);
-      
+
       const previewContainer = document.createElement('div');
       previewContainer.className = 'link-preview-container';
-      
+
       const previewWrapper = document.createElement('div');
       previewWrapper.className = 'link-preview-wrapper';
-      
+
       previews.forEach(preview => {
         previewWrapper.appendChild(createLinkPreview(preview));
       });
-      
+
       previewContainer.appendChild(previewWrapper);
       messageWrapper.appendChild(previewContainer);
-      
+
       // Add "See more" button
       const seeMoreContainer = document.createElement('div');
       seeMoreContainer.className = 'see-more-button';
@@ -987,9 +1052,9 @@
       });
       seeMoreContainer.appendChild(seeMoreButton);
       messageWrapper.appendChild(seeMoreContainer);
-      
+
       messagesContainer.appendChild(messageWrapper);
-      
+
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
@@ -1026,21 +1091,62 @@
         },
       }, '*');
 
-      // Show a subtle status message in the conversation
-      addMessage('Training this file with the current settings…', false);
+      // Show banner
+      if (trainingBanner) {
+        trainingBanner.classList.add('visible');
+        if (trainingBannerText) trainingBannerText.textContent = 'Training this file with the current settings…';
+        if (trainingProgressBar) trainingProgressBar.style.width = '0%';
+        if (closeTrainingBanner) closeTrainingBanner.style.display = 'none'; // Hide close button during training
+      }
+
+      if (trainFileButton) {
+        trainFileButton.disabled = true;
+      }
+
+      // Simulate progress stats for now
+      const totalFrames = 42;
+      let scanned = 0;
+
+      if (trainingTimerId) {
+        clearInterval(trainingTimerId);
+      }
+
+      trainingTimerId = window.setInterval(() => {
+        scanned += 7;
+        const percentage = Math.min((scanned / totalFrames) * 100, 100);
+
+        if (trainingProgressBar) {
+          trainingProgressBar.style.width = `${percentage}%`;
+        }
+
+        if (scanned >= totalFrames) {
+          scanned = totalFrames;
+          if (trainingBannerText) {
+            trainingBannerText.textContent = `Training complete. Indexed ${totalFrames} frames from this file.`;
+          }
+          if (closeTrainingBanner) {
+            closeTrainingBanner.style.display = 'flex'; // Show close button when done
+          }
+          if (trainFileButton) {
+            trainFileButton.disabled = false;
+          }
+          clearInterval(trainingTimerId);
+          trainingTimerId = null;
+        }
+      }, 400);
     }
 
     function sendMessage(messageText) {
       const text = messageText || messageInput.value.trim();
       if (!text) return;
-      
+
       // Add user message
       addMessage(text, true);
-      
+
       // Clear input
       messageInput.value = '';
       sendButton.disabled = true;
-      
+
       // Send to plugin
       parent.postMessage({
         pluginMessage: {
@@ -1048,10 +1154,10 @@
           text: text
         }
       }, '*');
-      
+
       // Show typing indicator
       addTypingIndicator();
-      
+
       // Simulate API call delay and show mock results
       setTimeout(() => {
         addLinkPreviews(mockPreviews);
@@ -1062,13 +1168,13 @@
 
     // Event listeners
     sendButton.addEventListener('click', () => sendMessage());
-    
+
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !sendButton.disabled) {
         sendMessage();
       }
     });
-    
+
     messageInput.addEventListener('input', () => {
       sendButton.disabled = !messageInput.value.trim();
     });
@@ -1160,6 +1266,16 @@
 
     // Focus input on load
     messageInput.focus();
-</script>
+
+    // Close training banner
+    if (closeTrainingBanner) {
+      closeTrainingBanner.addEventListener('click', () => {
+        if (trainingBanner) {
+          trainingBanner.classList.remove('visible');
+        }
+      });
+    }
+  </script>
 </body>
+
 </html>

@@ -22,15 +22,17 @@ interface TrainFileMessage {
   };
 }
 
-interface ChangeWorkspaceMessage {
+interface ChangeWorkspaceMessageBase {
   type: 'change-workspace';
 }
 
-type PluginMessage =
-  | UserMessage
-  | PreviewActionMessage
-  | TrainFileMessage
-  | ChangeWorkspaceMessage;
+interface ChangeWorkspaceSelectMessage extends ChangeWorkspaceMessageBase {
+  workspaceId: string;
+}
+
+type ChangeWorkspaceMessage = ChangeWorkspaceMessageBase | ChangeWorkspaceSelectMessage;
+
+type PluginMessage = UserMessage | PreviewActionMessage | TrainFileMessage | ChangeWorkspaceMessage;
 
 // Show the UI with appropriate size for chatbot
 figma.showUI(__html__, {
@@ -73,7 +75,7 @@ figma.ui.onmessage = (msg: PluginMessage) => {
   }
 
   if (msg.type === 'change-workspace') {
-    handleChangeWorkspace();
+    handleChangeWorkspace(msg);
   }
 };
 
@@ -86,9 +88,15 @@ function handleTrainFile(options: TrainFileMessage['options']): void {
   figma.notify('Training started for this file');
 }
 
-function handleChangeWorkspace(): void {
-  // Open your web app where users manage workspaces / teams
-  // Replace this URL with your actual app URL.
+function handleChangeWorkspace(msg: ChangeWorkspaceMessage): void {
+  // When a workspace is selected from the dropdown, we only update state on our side.
+  if ('workspaceId' in msg && msg.workspaceId) {
+    console.log('Workspace changed to:', msg.workspaceId);
+    figma.notify(`Workspace switched to: ${msg.workspaceId}`);
+    return;
+  }
+
+  // When no workspaceId is provided (footer click), open the web app to manage workspaces.
   figma.openExternal('https://example.com/workspace');
   figma.notify('Opening workspace settings in your browser');
 }
