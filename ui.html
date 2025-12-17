@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232c2c2c'/%3E%3Ctext x='50' y='70' font-family='Arial' font-size='60' fill='%23e5e5e5' text-anchor='middle' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1e1e1e;
+      color: #e5e5e5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 8px 12px;
+      background: #2c2c2c;
+      border-bottom: 1px solid #383838;
+      font-size: 11px;
+      font-weight: 500;
+      color: #e5e5e5;
+      letter-spacing: 0.3px;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      background: #1e1e1e;
+    }
+
+    .messages-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+      background: #383838;
+      border-radius: 4px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb:hover {
+      background: #4a4a4a;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 8px;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 6px 10px;
+      border-radius: 4px;
+      word-wrap: break-word;
+      line-height: 1.4;
+      font-size: 11px;
+    }
+
+    .message.user .message-bubble {
+      background: #383838;
+      color: #e5e5e5;
+    }
+
+    .message.bot .message-bubble {
+      background: #2c2c2c;
+      color: #b3b3b3;
+    }
+
+    .bot-message-wrapper {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .link-preview-container {
+      margin-top: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #383838 #1e1e1e;
+      width: 100%;
+    }
+
+    .link-preview-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .link-preview-container::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+
+    .link-preview-container::-webkit-scrollbar-thumb {
+      background: #383838;
+      border-radius: 3px;
+    }
+
+    .link-preview-wrapper {
+      display: flex;
+      gap: 8px;
+      width: max-content;
+    }
+
+    .link-preview {
+      position: relative;
+      background: #2c2c2c;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      width: 200px;
+      min-width: 200px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-image {
+      width: 100%;
+      height: 120px;
+      background: #1e1e1e;
+      border-bottom: 1px solid #383838;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-image-placeholder {
+      color: #666666;
+      font-size: 10px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .preview-image:hover {
+      background: #252525;
+    }
+
+    .link-preview:hover {
+      background: #333333;
+      border-color: #4a4a4a;
+    }
+
+    .link-preview:hover .preview-actions {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .preview-content {
+      padding: 8px 10px;
+    }
+
+    .preview-title {
+      font-weight: 500;
+      font-size: 11px;
+      color: #e5e5e5;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-url {
+      font-size: 10px;
+      color: #888888;
+      text-decoration: none;
+      word-break: break-all;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .preview-url:hover {
+      color: #b3b3b3;
+    }
+
+    .preview-description {
+      font-size: 10px;
+      color: #666666;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .preview-actions {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.15s ease;
+    }
+
+    .action-button {
+      background: #383838;
+      border: 1px solid #4a4a4a;
+      border-radius: 3px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: #e5e5e5;
+    }
+
+    .action-button:hover {
+      background: #4a4a4a;
+      border-color: #555555;
+    }
+
+    .see-more-button {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .see-more-button button {
+      background: #2c2c2c;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 10px;
+      color: #888888;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .see-more-button button:hover {
+      background: #333333;
+      border-color: #4a4a4a;
+      color: #b3b3b3;
+    }
+
+    .input-container {
+      padding: 8px 12px;
+      background: #2c2c2c;
+      border-top: 1px solid #383838;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .input-field {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      font-size: 11px;
+      background: #1e1e1e;
+      color: #e5e5e5;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .input-field:focus {
+      border-color: #4a4a4a;
+      background: #252525;
+    }
+
+    .input-field::placeholder {
+      color: #666666;
+    }
+
+    .send-button {
+      background: #383838;
+      border: 1px solid #4a4a4a;
+      border-radius: 4px;
+      padding: 6px 12px;
+      color: #e5e5e5;
+      font-weight: 400;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: #4a4a4a;
+      border-color: #555555;
+    }
+
+    .send-button:active:not(:disabled) {
+      background: #333333;
+    }
+
+    .send-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 3px;
+      padding: 6px 10px;
+    }
+
+    .typing-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #666666;
+      animation: typing 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        opacity: 0.4;
+      }
+      30% {
+        opacity: 1;
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666666;
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      gap: 16px;
+    }
+
+    .conversation-starters {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin-top: 12px;
+    }
+
+    .starter-button {
+      background: #2c2c2c;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: #e5e5e5;
+      font-size: 11px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .starter-button:hover {
+      background: #333333;
+      border-color: #4a4a4a;
+    }
+
+    .starter-button:active {
+      background: #2c2c2c;
+    }
+
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .image-modal.active {
+      display: flex;
+    }
+
+    .image-modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .image-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #383838;
+      border: 1px solid #4a4a4a;
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: #e5e5e5;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .image-modal-close:hover {
+      background: #4a4a4a;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      Search and reuse existing components instantly
+    </div>
+    
+    <div class="messages-container" id="messagesContainer">
+      <div class="empty-state" id="emptyState">
+        <div>Start a conversation to search for design links</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="height: 2px; width: 40px; background-color: #252525; " ></div>
+          <p>or</p>
+          <div style="height: 2px; width: 40px; background-color: #252525; " ></div>
+        </div>
+        <div class="conversation-starters">
+          <button class="starter-button" data-starter="Show me dashboard designs">Show me dashboard designs</button>
+          <button class="starter-button" data-starter="Find mobile app UI kits">Find mobile app UI kits</button>
+          <button class="starter-button" data-starter="Search for landing page templates">Search for landing page templates</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-modal" id="imageModal">
+      <button class="image-modal-close" id="closeModal">Close</button>
+      <img class="image-modal-content" id="modalImage" src="" alt="Preview">
+    </div>
+
+    <div class="input-container">
+      <input 
+        type="text" 
+        class="input-field" 
+        id="messageInput" 
+        placeholder="Search for designs..."
+        autocomplete="off"
+      />
+      <button class="send-button" id="sendButton">Send</button>
+    </div>
+  </div>
+
+<script>
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const emptyState = document.getElementById('emptyState');
+
+    // Mock link previews data - 4 links
+    const mockPreviews = [
+      {
+        title: "Modern Dashboard Design",
+        url: "https://figma.com/file/abc123/dashboard",
+        description: "A clean and modern dashboard interface with beautiful gradients and smooth animations.",
+        image: "https://static.photos/gaming/640x360/84"
+      },
+      {
+        title: "Mobile App UI Kit",
+        url: "https://figma.com/file/def456/mobile-ui",
+        description: "Complete mobile app UI kit with 50+ screens and components ready to use.",
+        image: "https://static.photos/gaming/640x360/85"
+      },
+      {
+        title: "Landing Page Template",
+        url: "https://figma.com/file/ghi789/landing",
+        description: "Stunning landing page design with hero section, features, and testimonials.",
+        image: "https://static.photos/gaming/640x360/86"
+      },
+      {
+        title: "Icon Library Set",
+        url: "https://figma.com/file/jkl012/icons",
+        description: "Comprehensive icon library with 200+ icons in multiple styles and formats.",
+        image: "https://static.photos/gaming/640x360/87"
+      }
+    ];
+
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const closeModal = document.getElementById('closeModal');
+
+    function hideEmptyState() {
+      if (emptyState) {
+        emptyState.style.display = 'none';
+      }
+    }
+
+    function addMessage(text, isUser) {
+      hideEmptyState();
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.textContent = text;
+      
+      messageDiv.appendChild(bubble);
+      messagesContainer.appendChild(messageDiv);
+      
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      return messageDiv;
+    }
+
+    function addTypingIndicator() {
+      hideEmptyState();
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message bot';
+      messageDiv.id = 'typingIndicator';
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble typing-indicator';
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'typing-dot';
+        bubble.appendChild(dot);
+      }
+      
+      messageDiv.appendChild(bubble);
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    function createLinkPreview(preview) {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'link-preview';
+      
+      // Create image div first
+      const imageDiv = document.createElement('div');
+      imageDiv.className = 'preview-image';
+      
+      if (preview.image) {
+        const img = document.createElement('img');
+        img.src = preview.image;
+        img.alt = preview.title;
+        img.style.display = 'block';
+        img.onerror = (e) => {
+          console.error('Image failed to load:', preview.image);
+          imageDiv.innerHTML = '<div class="preview-image-placeholder">No preview available</div>';
+        };
+        img.onload = () => {
+          console.log('Image loaded successfully:', preview.image);
+        };
+        imageDiv.appendChild(img);
+        imageDiv.addEventListener('click', () => {
+          showImageModal(preview.image, preview.title);
+        });
+      } else {
+        imageDiv.innerHTML = '<div class="preview-image-placeholder">No preview available</div>';
+      }
+      
+      // Create content div
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'preview-content';
+      contentDiv.innerHTML = `
+        <div class="preview-title">${preview.title}</div>
+        <a href="${preview.url}" class="preview-url" target="_blank">${preview.url}</a>
+        <div class="preview-description">${preview.description}</div>
+      `;
+      
+      // Create actions div
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'preview-actions';
+      actionsDiv.innerHTML = `
+        <button class="action-button copy" data-action="copy" data-url="${preview.url}">Copy</button>
+        <button class="action-button insert" data-action="insert" data-url="${preview.url}">Insert</button>
+        <button class="action-button goto" data-action="goto" data-url="${preview.url}">Open file</button>
+      `;
+      
+      // Append all elements
+      previewDiv.appendChild(imageDiv);
+      previewDiv.appendChild(contentDiv);
+      previewDiv.appendChild(actionsDiv);
+      
+      // Add click handlers for action buttons
+      const actionButtons = actionsDiv.querySelectorAll('.action-button');
+      actionButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = button.dataset.action;
+          const url = button.dataset.url;
+          handlePreviewAction(action, url, preview.title);
+        });
+      });
+      
+      return previewDiv;
+    }
+
+    function showImageModal(imageSrc, title) {
+      modalImage.src = imageSrc;
+      modalImage.alt = title;
+      imageModal.classList.add('active');
+    }
+
+    function closeImageModal() {
+      imageModal.classList.remove('active');
+      modalImage.src = '';
+    }
+
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal || e.target === closeModal) {
+        closeImageModal();
+      }
+    });
+
+    closeModal.addEventListener('click', closeImageModal);
+
+    function handlePreviewAction(action, url, title) {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'preview-action',
+          action: action,
+          url: url,
+          title: title
+        }
+      }, '*');
+    }
+
+    function addLinkPreviews(previews) {
+      removeTypingIndicator();
+      
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = 'bot-message-wrapper';
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message bot';
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.textContent = 'Found design links:';
+      
+      messageDiv.appendChild(bubble);
+      messageWrapper.appendChild(messageDiv);
+      
+      const previewContainer = document.createElement('div');
+      previewContainer.className = 'link-preview-container';
+      
+      const previewWrapper = document.createElement('div');
+      previewWrapper.className = 'link-preview-wrapper';
+      
+      previews.forEach(preview => {
+        previewWrapper.appendChild(createLinkPreview(preview));
+      });
+      
+      previewContainer.appendChild(previewWrapper);
+      messageWrapper.appendChild(previewContainer);
+      
+      // Add "See more" button
+      const seeMoreContainer = document.createElement('div');
+      seeMoreContainer.className = 'see-more-button';
+      const seeMoreButton = document.createElement('button');
+      seeMoreButton.textContent = 'See more';
+      seeMoreButton.addEventListener('click', () => {
+        // Send "See more" as a user message
+        sendMessage('See more');
+      });
+      seeMoreContainer.appendChild(seeMoreButton);
+      messageWrapper.appendChild(seeMoreContainer);
+      
+      messagesContainer.appendChild(messageWrapper);
+      
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function sendMessage(messageText) {
+      const text = messageText || messageInput.value.trim();
+      if (!text) return;
+      
+      // Add user message
+      addMessage(text, true);
+      
+      // Clear input
+      messageInput.value = '';
+      sendButton.disabled = true;
+      
+      // Send to plugin
+      parent.postMessage({
+        pluginMessage: {
+          type: 'user-message',
+          text: text
+        }
+      }, '*');
+      
+      // Show typing indicator
+      addTypingIndicator();
+      
+      // Simulate API call delay and show mock results
+      setTimeout(() => {
+        addLinkPreviews(mockPreviews);
+        sendButton.disabled = false;
+        messageInput.focus();
+      }, 1200);
+    }
+
+    // Event listeners
+    sendButton.addEventListener('click', () => sendMessage());
+    
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !sendButton.disabled) {
+        sendMessage();
+      }
+    });
+    
+    messageInput.addEventListener('input', () => {
+      sendButton.disabled = !messageInput.value.trim();
+    });
+
+    // Conversation starter buttons
+    const starterButtons = document.querySelectorAll('.starter-button');
+    starterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const starterText = button.dataset.starter;
+        sendMessage(starterText);
+      });
+    });
+
+    // Focus input on load
+    messageInput.focus();
+</script>
+</body>
+</html>
