@@ -13,7 +13,24 @@ interface PreviewActionMessage {
   title: string;
 }
 
-type PluginMessage = UserMessage | PreviewActionMessage;
+interface TrainFileMessage {
+  type: 'train-file';
+  options: {
+    depthPreset: 'top-level' | 'all' | 'custom';
+    ignoreTinyFrames: boolean;
+    onlyCurrentPage: boolean;
+  };
+}
+
+interface ChangeWorkspaceMessage {
+  type: 'change-workspace';
+}
+
+type PluginMessage =
+  | UserMessage
+  | PreviewActionMessage
+  | TrainFileMessage
+  | ChangeWorkspaceMessage;
 
 // Show the UI with appropriate size for chatbot
 figma.showUI(__html__, {
@@ -50,7 +67,31 @@ figma.ui.onmessage = (msg: PluginMessage) => {
         break;
     }
   }
+
+  if (msg.type === 'train-file') {
+    handleTrainFile(msg.options);
+  }
+
+  if (msg.type === 'change-workspace') {
+    handleChangeWorkspace();
+  }
 };
+
+function handleTrainFile(options: TrainFileMessage['options']): void {
+  // In a real implementation, you would:
+  // - Walk the current file/pages
+  // - Collect frames based on options
+  // - Send them to your backend for indexing
+  console.log('Train this file with options:', options);
+  figma.notify('Training started for this file');
+}
+
+function handleChangeWorkspace(): void {
+  // Open your web app where users manage workspaces / teams
+  // Replace this URL with your actual app URL.
+  figma.openExternal('https://example.com/workspace');
+  figma.notify('Opening workspace settings in your browser');
+}
 
 // Copy the Figma layer to clipboard
 async function handleCopyLayer(url: string, title: string): Promise<void> {

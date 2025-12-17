@@ -37,6 +37,202 @@
       letter-spacing: 0.3px;
     }
 
+    .workspace-bar {
+      padding: 8px 12px 6px;
+      background: #1e1e1e;
+      border-bottom: 1px solid #2c2c2c;
+      font-size: 10px;
+      position: relative;
+    }
+
+    .workspace-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .workspace-name-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #e5e5e5;
+      font-size: 10px;
+    }
+
+    .workspace-name-button:hover .workspace-name {
+      color: #ffffff;
+    }
+
+    .workspace-name {
+      font-weight: 500;
+    }
+
+    .workspace-chevron {
+      font-size: 9px;
+      color: #888888;
+    }
+
+    .train-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .train-button {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      background: #383838;
+      border: 1px solid #4a4a4a;
+      border-radius: 4px;
+      padding: 0 8px;
+      font-size: 10px;
+      color: #e5e5e5;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .train-button:hover {
+      background: #4a4a4a;
+      border-color: #555555;
+    }
+
+    .advanced-icon-button {
+      width: 22px;
+      height: 22px;
+      background: #2c2c2c;
+      border: 1px solid #383838;
+      border-radius: 3px;
+      color: #888888;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .advanced-icon-button:hover {
+      background: #333333;
+      border-color: #4a4a4a;
+      color: #b3b3b3;
+    }
+
+    .workspace-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 12px;
+      margin-top: 4px;
+      background: #1e1e1e;
+      border: 1px solid #2c2c2c;
+      border-radius: 4px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+      min-width: 180px;
+      max-width: 220px;
+      padding: 4px 0;
+      display: none;
+      z-index: 20;
+    }
+
+    .workspace-dropdown.open {
+      display: block;
+    }
+
+    .workspace-dropdown-option {
+      padding: 6px 10px;
+      font-size: 10px;
+      color: #e5e5e5;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .workspace-dropdown-option span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .workspace-dropdown-option:hover {
+      background: #2c2c2c;
+    }
+
+    .workspace-dropdown-footer {
+      border-top: 1px solid #2c2c2c;
+      margin-top: 4px;
+      padding: 6px 10px;
+      font-size: 10px;
+      color: #8ab4ff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .workspace-dropdown-footer:hover {
+      background: #2c2c2c;
+      color: #c3ddff;
+    }
+
+    .advanced-options {
+      display: none;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid #2c2c2c;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .advanced-options.open {
+      display: flex;
+    }
+
+    .advanced-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .field-label {
+      color: #b3b3b3;
+    }
+
+    .depth-select {
+      background: #1e1e1e;
+      border: 1px solid #383838;
+      border-radius: 3px;
+      padding: 3px 6px;
+      color: #e5e5e5;
+      font-size: 10px;
+    }
+
+    .depth-select:focus {
+      outline: none;
+      border-color: #4a4a4a;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #b3b3b3;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      margin: 0;
+    }
+
     .messages-container {
       flex: 1;
       overflow-y: auto;
@@ -464,7 +660,65 @@
     <div class="chat-header">
       Search and reuse existing components instantly
     </div>
-    
+
+    <div class="workspace-bar">
+      <div class="workspace-row">
+        <button class="workspace-name-button" id="workspaceButton" title="Switch workspace">
+          <span class="workspace-name" id="workspaceName">ICD</span>
+          <span class="workspace-chevron">▾</span>
+        </button>
+        <div class="train-controls">
+          <button class="train-button" id="trainFileButton" title="Train this file">Train this file</button>
+          <button
+            class="advanced-icon-button"
+            id="advancedIconButton"
+            title="Advanced options"
+            aria-label="Advanced training options"
+          >
+            ⛭
+          </button>
+        </div>
+      </div>
+      <div class="workspace-dropdown" id="workspaceDropdown">
+        <div
+          class="workspace-dropdown-option"
+          data-workspace-id="icd"
+          data-workspace-name="ICD"
+        >
+          <span>ICD</span>
+        </div>
+        <div
+          class="workspace-dropdown-option"
+          data-workspace-id="unifyapps"
+          data-workspace-name="Unifyapps"
+        >
+          <span>Unifyapps</span>
+        </div>
+        <div class="workspace-dropdown-footer" id="workspaceDropdownFooter">
+          <span>Add new workspace</span>
+          <span>↗</span>
+        </div>
+      </div>
+      <div class="advanced-options" id="advancedOptions">
+        <div class="advanced-row">
+          <span class="field-label">Depth preset</span>
+          <select id="depthPreset" class="depth-select">
+            <option value="top-level">Top-level frames</option>
+            <option value="all">All frames</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="ignoreTinyFrames" />
+          <span>Ignore tiny frames / icons</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="onlyThisPage" checked />
+          <span>Include only frames on this page</span>
+        </label>
+      </div>
+    </div>
+
     <div class="messages-container" id="messagesContainer">
       <div class="empty-state" id="emptyState">
         <div>Start a conversation to search for design links</div>
@@ -503,6 +757,16 @@
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
     const emptyState = document.getElementById('emptyState');
+    const workspaceNameEl = document.getElementById('workspaceName');
+    const workspaceButton = document.getElementById('workspaceButton');
+    const trainFileButton = document.getElementById('trainFileButton');
+    const advancedIconButton = document.getElementById('advancedIconButton');
+    const advancedOptions = document.getElementById('advancedOptions');
+    const depthPresetSelect = document.getElementById('depthPreset');
+    const ignoreTinyCheckbox = document.getElementById('ignoreTinyFrames');
+    const onlyThisPageCheckbox = document.getElementById('onlyThisPage');
+    const workspaceDropdown = document.getElementById('workspaceDropdown');
+    const workspaceDropdownFooter = document.getElementById('workspaceDropdownFooter');
 
     // Mock link previews data - 4 links
     const mockPreviews = [
@@ -729,6 +993,43 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
+    function getTrainingOptions() {
+      const depthValue =
+        depthPresetSelect && depthPresetSelect instanceof HTMLSelectElement
+          ? depthPresetSelect.value
+          : 'top-level';
+
+      const ignoreTiny =
+        ignoreTinyCheckbox && ignoreTinyCheckbox instanceof HTMLInputElement
+          ? ignoreTinyCheckbox.checked
+          : false;
+
+      const onlyCurrentPage =
+        onlyThisPageCheckbox && onlyThisPageCheckbox instanceof HTMLInputElement
+          ? onlyThisPageCheckbox.checked
+          : true;
+
+      return {
+        depthPreset: depthValue,
+        ignoreTinyFrames: ignoreTiny,
+        onlyCurrentPage,
+      };
+    }
+
+    function startTraining() {
+      const options = getTrainingOptions();
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'train-file',
+          options,
+        },
+      }, '*');
+
+      // Show a subtle status message in the conversation
+      addMessage('Training this file with the current settings…', false);
+    }
+
     function sendMessage(messageText) {
       const text = messageText || messageInput.value.trim();
       if (!text) return;
@@ -779,6 +1080,82 @@
         const starterText = button.dataset.starter;
         sendMessage(starterText);
       });
+    });
+
+    // Training controls
+    if (trainFileButton) {
+      trainFileButton.addEventListener('click', () => {
+        startTraining();
+      });
+    }
+
+    if (advancedIconButton && advancedOptions) {
+      advancedIconButton.addEventListener('click', () => {
+        advancedOptions.classList.toggle('open');
+      });
+    }
+
+    if (workspaceButton) {
+      workspaceButton.addEventListener('click', () => {
+        if (workspaceDropdown) {
+          workspaceDropdown.classList.toggle('open');
+        }
+      });
+    }
+
+    // Workspace dropdown options
+    const workspaceOptions = document.querySelectorAll('.workspace-dropdown-option');
+    workspaceOptions.forEach((option) => {
+      option.addEventListener('click', () => {
+        const el = option;
+        const name = el.dataset.workspaceName || el.textContent || '';
+        const id = el.dataset.workspaceId || name;
+
+        if (workspaceNameEl) {
+          workspaceNameEl.textContent = name;
+        }
+
+        parent.postMessage({
+          pluginMessage: {
+            type: 'change-workspace',
+            workspaceId: id,
+          },
+        }, '*');
+
+        if (workspaceDropdown) {
+          workspaceDropdown.classList.remove('open');
+        }
+      });
+    });
+
+    if (workspaceDropdownFooter) {
+      workspaceDropdownFooter.addEventListener('click', () => {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'change-workspace',
+          },
+        }, '*');
+
+        if (workspaceDropdown) {
+          workspaceDropdown.classList.remove('open');
+        }
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      if (
+        workspaceDropdown &&
+        workspaceDropdown.classList.contains('open') &&
+        !workspaceDropdown.contains(target) &&
+        !(workspaceButton && workspaceButton.contains(target))
+      ) {
+        workspaceDropdown.classList.remove('open');
+      }
     });
 
     // Focus input on load
